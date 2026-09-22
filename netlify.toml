@@ -1,0 +1,10 @@
+[build]
+  publish = "."
+
+# Keep normal static files working while sending unknown browser paths
+# back to index.html for the single-page frontend.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
