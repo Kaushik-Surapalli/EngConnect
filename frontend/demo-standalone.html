@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>EngConnect — Engineering Student Support Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+
+<style>
+/* ============================================================
+   EngConnect — token system
+   Color:  Ink #14162B / Paper #F6F5F2 / Indigo #363A94 /
+           Gold #E8A33D (beacon/guidance accent) / Teal #1F9C82 (verified)
+   Type:   Space Grotesk (headings/UI) + Inter (body/reading)
+   ============================================================ */
+:root{
+  --ink:#14162B; --ink-soft:#4A4D6B; --ink-faint:#8688A3;
+  --paper:#F6F5F2; --paper-raised:#FFFFFF; --paper-dim:#ECEAE3;
+  --indigo:#363A94; --indigo-deep:#22245C; --indigo-tint:#E9E9F7;
+  --gold:#E8A33D; --gold-tint:#FBEBD2;
+  --teal:#1C8E77; --teal-tint:#DEF2EC;
+  --coral:#D9634C; --coral-tint:#FBE6E1;
+  --line:rgba(20,22,43,0.11); --line-strong:rgba(20,22,43,0.2);
+  --shadow: 0 1px 2px rgba(20,22,43,0.06), 0 8px 24px -12px rgba(20,22,43,0.18);
+  --radius-sm:10px; --radius-md:14px; --radius-lg:20px;
+  --font-head:'Space Grotesk', 'Inter', sans-serif;
+  --font-body:'Inter', sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#F2F1F8; --ink-soft:#C6C7DA; --ink-faint:#8688A3;
+    --paper:#111226; --paper-raised:#181A33; --paper-dim:#1F2140;
+    --indigo:#8C90E8; --indigo-deep:#C7C9F5; --indigo-tint:#242759;
+    --gold:#F0B85C; --gold-tint:#3A2E17;
+    --teal:#4FC8AD; --teal-tint:#123330;
+    --coral:#EC8674; --coral-tint:#3A2019;
+    --line:rgba(242,241,248,0.12); --line-strong:rgba(242,241,248,0.24);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#F2F1F8; --ink-soft:#C6C7DA; --ink-faint:#8688A3;
+  --paper:#111226; --paper-raised:#181A33; --paper-dim:#1F2140;
+  --indigo:#8C90E8; --indigo-deep:#C7C9F5; --indigo-tint:#242759;
+  --gold:#F0B85C; --gold-tint:#3A2E17;
+  --teal:#4FC8AD; --teal-tint:#123330;
+  --coral:#EC8674; --coral-tint:#3A2019;
+  --line:rgba(242,241,248,0.12); --line-strong:rgba(242,241,248,0.24);
+  --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  color-scheme: dark;
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+body{
+  margin:0; height:100%; background:var(--paper); color:var(--ink);
+  font-family:var(--font-body); -webkit-font-smoothing:antialiased;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+#root{height:100%;}
+h1,h2,h3,h4,.font-head{font-family:var(--font-head); letter-spacing:-0.01em;}
+a{color:inherit;}
+button{font-family:inherit;}
+::selection{background:var(--gold-tint); color:var(--ink);}
+::-webkit-scrollbar{width:10px; height:10px;}
+::-webkit-scrollbar-thumb{background:var(--line-strong); border-radius:8px;}
+:focus-visible{outline:2px solid var(--indigo); outline-offset:2px; border-radius:4px;}
+
+/* ---------- layout shell ---------- */
+.shell{display:flex; min-height:100%;}
+.sidebar{
+  width:248px; flex-shrink:0; background:var(--paper-raised); border-right:1px solid var(--line);
+  display:flex; flex-direction:column; padding:22px 16px; position:sticky; top:0;
+  height:100vh; padding-top:calc(22px + env(safe-area-inset-top,0px));
+}
+.brand{display:flex; align-items:center; gap:10px; padding:2px 8px 22px 8px;}
+.brand-mark{
+  width:34px; height:34px; border-radius:9px; background:linear-gradient(155deg,var(--indigo),var(--indigo-deep));
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.brand-name{font-family:var(--font-head); font-weight:700; font-size:16.5px; line-height:1.1;}
+.brand-sub{font-size:10.5px; color:var(--ink-faint); font-weight:500;}
+.nav-list{display:flex; flex-direction:column; gap:2px; flex:1;}
+.nav-item{
+  display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:10px;
+  font-size:14px; font-weight:500; color:var(--ink-soft); cursor:pointer; border:none; background:none;
+  width:100%; text-align:left; transition:background .12s ease, color .12s ease;
+}
+.nav-item:hover{background:var(--paper-dim); color:var(--ink);}
+.nav-item.active{background:var(--indigo-tint); color:var(--indigo-deep); font-weight:600;}
+:root[data-theme="dark"] .nav-item.active, .nav-item.active{color:var(--indigo);}
+.nav-item svg{flex-shrink:0;}
+.nav-count{margin-left:auto; font-size:11px; background:var(--paper-dim); color:var(--ink-faint); padding:1px 7px; border-radius:20px; font-weight:600;}
+.nav-item.active .nav-count{background:var(--paper-raised); color:var(--indigo);}
+
+.role-switch{border:1px solid var(--line); border-radius:12px; padding:10px; margin-top:10px;}
+.role-switch-label{font-size:10.5px; color:var(--ink-faint); font-weight:600; text-transform:uppercase; letter-spacing:.04em; padding:0 2px 8px;}
+.role-toggle{display:flex; background:var(--paper-dim); border-radius:9px; padding:3px; gap:2px;}
+.role-toggle button{flex:1; padding:7px 4px; border:none; background:none; border-radius:7px; font-size:12.5px; font-weight:600; color:var(--ink-faint); cursor:pointer; transition:.15s;}
+.role-toggle button.active{background:var(--paper-raised); color:var(--ink); box-shadow:var(--shadow);}
+
+.main{flex:1; min-width:0; display:flex; flex-direction:column;}
+.topbar{
+  position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:14px;
+  padding:14px 26px; background:color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--line);
+  padding-top:calc(14px + env(safe-area-inset-top,0px));
+}
+.menu-btn{display:none; background:none; border:1px solid var(--line); border-radius:9px; padding:7px; cursor:pointer; color:var(--ink);}
+.search-wrap{flex:1; max-width:420px; position:relative;}
+.search-input{
+  width:100%; padding:9px 12px 9px 36px; border-radius:10px; border:1px solid var(--line);
+  background:var(--paper-raised); color:var(--ink); font-size:13.5px; font-family:var(--font-body);
+}
+.search-input:focus{border-color:var(--indigo);}
+.search-icon{position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--ink-faint); pointer-events:none;}
+.search-drop{position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); z-index:40; max-height:320px; overflow:auto; padding:6px;}
+.search-drop-item{display:flex; flex-direction:column; gap:2px; padding:9px 10px; border-radius:8px; cursor:pointer;}
+.search-drop-item:hover{background:var(--paper-dim);}
+.search-drop-empty{padding:16px; font-size:13px; color:var(--ink-faint); text-align:center;}
+.demo-pill{
+  font-size:10.5px; font-weight:700; letter-spacing:.03em; color:var(--coral); background:var(--coral-tint);
+  padding:4px 10px; border-radius:20px; white-space:nowrap; flex-shrink:0;
+}
+.bell-wrap{position:relative; flex-shrink:0;}
+.bell-btn{background:var(--paper-raised); border:1px solid var(--line); width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink); position:relative;}
+.bell-dot{position:absolute; top:7px; right:7px; width:7px; height:7px; border-radius:50%; background:var(--coral); border:1.5px solid var(--paper-raised);}
+.notif-drop{position:absolute; right:0; top:calc(100% + 8px); width:300px; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); z-index:40; overflow:hidden;}
+.notif-head{padding:12px 14px; font-size:13px; font-weight:700; border-bottom:1px solid var(--line);}
+.notif-item{padding:11px 14px; border-bottom:1px solid var(--line); font-size:12.5px; color:var(--ink-soft); line-height:1.45;}
+.notif-item:last-child{border-bottom:none;}
+.notif-item b{color:var(--ink); font-weight:600;}
+.notif-time{display:block; margin-top:3px; font-size:11px; color:var(--ink-faint);}
+
+.content{padding:26px; max-width:1180px; width:100%; margin:0 auto; flex:1;}
+.page-head{margin-bottom:22px;}
+.page-eyebrow{font-size:12px; color:var(--indigo); font-weight:700; margin-bottom:6px;}
+.page-title{font-size:26px; margin:0 0 6px; font-weight:700;}
+.page-desc{color:var(--ink-soft); font-size:14px; max-width:64ch; line-height:1.55; margin:0;}
+
+/* ---------- primitives ---------- */
+.card{background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius-md); box-shadow:var(--shadow);}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px; font-weight:600; font-size:13.5px;
+  padding:10px 16px; border-radius:10px; border:1px solid transparent; cursor:pointer; font-family:inherit;
+  transition:transform .08s ease, filter .12s ease;
+}
+.btn:active{transform:scale(0.98);}
+.btn-primary{background:var(--indigo); color:#fff;}
+.btn-primary:hover{filter:brightness(1.08);}
+.btn-primary:disabled{opacity:.45; cursor:not-allowed;}
+.btn-gold{background:var(--gold); color:var(--indigo-deep);}
+.btn-gold:hover{filter:brightness(1.05);}
+.btn-ghost{background:transparent; border-color:var(--line); color:var(--ink);}
+.btn-ghost:hover{background:var(--paper-dim);}
+.btn-sm{padding:6px 12px; font-size:12.5px; border-radius:8px;}
+.btn-block{width:100%;}
+
+.badge{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:4px 9px; border-radius:20px;}
+.badge-indigo{background:var(--indigo-tint); color:var(--indigo-deep);}
+.badge-teal{background:var(--teal-tint); color:var(--teal);}
+.badge-gold{background:var(--gold-tint); color:#8A5A11;}
+:root[data-theme="dark"] .badge-gold{color:var(--gold);}
+.badge-coral{background:var(--coral-tint); color:var(--coral);}
+.badge-outline{background:transparent; border:1px solid var(--line-strong); color:var(--ink-soft);}
+
+.chip{
+  padding:7px 13px; border-radius:20px; border:1px solid var(--line); background:var(--paper-raised);
+  font-size:12.5px; font-weight:600; color:var(--ink-soft); cursor:pointer; transition:.12s;
+}
+.chip:hover{border-color:var(--line-strong);}
+.chip.active{background:var(--indigo); border-color:var(--indigo); color:#fff;}
+
+/* identity badge — hex "anonymity" avatar: encodes year+branch, never identity */
+.idhex{
+  width:40px; height:40px; flex-shrink:0; clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex; align-items:center; justify-content:center; flex-direction:column; color:#fff;
+}
+.idhex span{font-family:var(--font-head); font-weight:700; line-height:1;}
+.idhex .yr{font-size:12px;} .idhex .br{font-size:7px; letter-spacing:.03em; margin-top:1px;}
+
+.grid{display:grid; gap:16px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+@media (max-width:980px){ .grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:640px){ .grid-4,.grid-3,.grid-2{grid-template-columns:1fr;} }
+
+.stat-card{padding:18px; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease;}
+.stat-card:hover{transform:translateY(-2px);}
+.stat-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+.stat-icon{width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;}
+.stat-num{font-family:var(--font-head); font-size:26px; font-weight:700; line-height:1;}
+.stat-label{font-size:12.5px; color:var(--ink-soft); margin-top:5px; font-weight:500;}
+
+.section-title{font-size:15px; font-weight:700; margin:0 0 12px; display:flex; align-items:center; justify-content:space-between;}
+.link-more{font-size:12.5px; color:var(--indigo); font-weight:600; cursor:pointer; border:none; background:none; padding:0;}
+
+/* ---------- Ask Seniors ---------- */
+.ask-card{padding:22px;}
+.textarea{
+  width:100%; min-height:120px; border:1px solid var(--line); border-radius:12px; padding:14px;
+  font-family:var(--font-body); font-size:14.5px; color:var(--ink); background:var(--paper); resize:vertical; line-height:1.5;
+}
+.textarea:focus{border-color:var(--indigo);}
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 18px;}
+.anon-note{
+  display:flex; gap:10px; align-items:flex-start; background:var(--teal-tint); border-radius:12px; padding:12px 14px;
+  font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin-bottom:16px;
+}
+.anon-note svg{flex-shrink:0; color:var(--teal); margin-top:1px;}
+
+/* ---------- My Questions ---------- */
+.qrow{display:flex; align-items:center; gap:14px; padding:15px 18px; border-bottom:1px solid var(--line); cursor:pointer; transition:background .1s;}
+.qrow:last-child{border-bottom:none;}
+.qrow:hover{background:var(--paper-dim);}
+.qrow-id{font-family:var(--font-head); font-weight:700; font-size:13px; color:var(--indigo); width:56px; flex-shrink:0;}
+.qrow-body{flex:1; min-width:0;}
+.qrow-text{font-size:13.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.qrow-meta{font-size:11.5px; color:var(--ink-faint); margin-top:3px; display:flex; gap:8px; align-items:center;}
+.qrow-answers{flex-shrink:0; text-align:right; font-size:12px; font-weight:700; color:var(--ink-soft);}
+.qrow-answers.zero{color:var(--ink-faint); font-weight:500;}
+.empty-state{padding:44px 20px; text-align:center; color:var(--ink-faint);}
+.empty-state svg{margin-bottom:10px; opacity:.5;}
+.empty-state p{font-size:13.5px; margin:4px 0 14px;}
+
+/* ---------- Question detail ---------- */
+.back-btn{display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:var(--ink-soft); background:none; border:none; cursor:pointer; margin-bottom:16px; padding:0;}
+.back-btn:hover{color:var(--ink);}
+.qdetail-card{padding:22px; margin-bottom:18px;}
+.qdetail-label{font-size:11px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; margin-bottom:9px;}
+.qdetail-text{font-size:17px; line-height:1.5; font-weight:500; margin:0 0 14px;}
+.qdetail-foot{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.answers-head{display:flex; align-items:center; justify-content:space-between; margin:26px 0 14px;}
+.answers-count{font-family:var(--font-head); font-weight:700; font-size:16px;}
+.answer-card{padding:17px; margin-bottom:12px;}
+.answer-top{display:flex; gap:12px; align-items:flex-start;}
+.answer-meta{flex:1;}
+.answer-senior{font-size:13.5px; font-weight:700; display:flex; align-items:center; gap:6px;}
+.answer-exp{font-size:11.5px; color:var(--ink-faint); margin-top:2px;}
+.answer-text{font-size:14px; line-height:1.6; color:var(--ink); margin:11px 0 0;}
+.answer-foot{display:flex; align-items:center; gap:12px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line);}
+.helpful-btn{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:6px 12px; border-radius:8px; border:1px solid var(--line); background:none; cursor:pointer; color:var(--ink-soft);}
+.helpful-btn.on{background:var(--teal-tint); border-color:transparent; color:var(--teal);}
+.new-answer-flash{animation:flashIn .9s ease;}
+@keyframes flashIn{0%{background:var(--gold-tint); box-shadow:0 0 0 2px var(--gold);} 100%{background:var(--paper-raised); box-shadow:none;}}
+
+.wht-card{padding:18px;}
+.wht-count{font-size:13.5px; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:8px;}
+.wht-count b{color:var(--indigo); font-family:var(--font-head); font-size:16px;}
+.wht-item{display:flex; align-items:center; gap:11px; padding:9px 0; border-bottom:1px solid var(--line);}
+.wht-item:last-child{border-bottom:none;}
+.wht-name{font-size:12.5px; font-weight:600;}
+.wht-topic{font-size:11.5px; color:var(--ink-faint);}
+
+/* ---------- Senior view ---------- */
+.senior-banner{display:flex; align-items:center; gap:12px; background:var(--indigo-deep); color:#fff; border-radius:14px; padding:16px 18px; margin-bottom:20px;}
+.senior-banner svg{flex-shrink:0;}
+.senior-banner b{font-family:var(--font-head);}
+.senior-banner p{margin:2px 0 0; font-size:12.5px; opacity:.85; line-height:1.5;}
+.answer-box{border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:14px; background:var(--paper);}
+
+/* ---------- Opportunities ---------- */
+.filter-bar{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; align-items:center;}
+.select{padding:8px 12px; border-radius:9px; border:1px solid var(--line); background:var(--paper-raised); color:var(--ink); font-size:13px; font-family:inherit; font-weight:500;}
+.opp-card{padding:18px; display:flex; flex-direction:column; gap:10px;}
+.opp-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+.opp-title{font-size:14.5px; font-weight:700; margin:0; line-height:1.35;}
+.opp-org{font-size:12px; color:var(--ink-faint); margin-top:3px;}
+.opp-tags{display:flex; flex-wrap:wrap; gap:6px;}
+.opp-foot{display:flex; justify-content:space-between; align-items:center; margin-top:4px; font-size:11.5px; color:var(--ink-faint);}
+
+/* ---------- Roadmap ---------- */
+.roadmap-form{padding:22px; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; align-items:end;}
+@media (max-width:780px){.roadmap-form{grid-template-columns:1fr 1fr;}}
+.field label{display:block; font-size:11.5px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px;}
+.timeline{position:relative; padding-left:26px; margin-top:22px;}
+.timeline::before{content:'';position:absolute; left:8px; top:6px; bottom:6px; width:2px; background:var(--line-strong);}
+.tl-item{position:relative; padding-bottom:22px;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-dot{position:absolute; left:-26px; top:2px; width:18px; height:18px; border-radius:50%; background:var(--indigo); border:3px solid var(--paper); box-shadow:0 0 0 1px var(--line);}
+.tl-card{padding:14px 16px;}
+.tl-title{font-size:13.5px; font-weight:700; margin:0 0 3px;}
+.tl-desc{font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin:0;}
+
+/* ---------- Experiences ---------- */
+.exp-card{padding:17px;}
+.exp-top{display:flex; gap:11px; align-items:center;}
+.exp-topic{font-size:13.5px; font-weight:700; margin-top:2px;}
+.exp-quote{font-size:13px; color:var(--ink-soft); line-height:1.55; margin:11px 0 0;}
+
+/* ---------- Toast ---------- */
+.toast{
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper);
+  padding:13px 20px; border-radius:12px; font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:10px;
+  box-shadow:0 12px 30px -8px rgba(0,0,0,.4); z-index:100; max-width:90vw;
+  padding-bottom:calc(13px + env(safe-area-inset-bottom,0px));
+}
+.toast b{color:var(--gold);}
+
+/* ---------- mobile ---------- */
+.overlay{position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:29;}
+@media (max-width:900px){
+  .sidebar{position:fixed; left:0; top:0; z-index:30; transform:translateX(-100%); transition:transform .2s ease; box-shadow:var(--shadow);}
+  .sidebar.open{transform:translateX(0);}
+  .menu-btn{display:flex; align-items:center; justify-content:center;}
+  .content{padding:18px;}
+  .topbar{padding:12px 16px; padding-top:calc(12px + env(safe-area-inset-top,0px));}
+  .roadmap-form{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:520px){
+  .search-wrap{display:none;}
+  .grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}
+  .roadmap-form{grid-template-columns:1fr;}
+}
+.scrollx{overflow-x:auto;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useMemo,useRef,useCallback} = React;
+
+/* ==========================================================================
+   MOCK / DEMO DATA LAYER
+   --------------------------------------------------------------------------
+   Everything below simulates a REST backend. Every function returns a
+   Promise, matches a plausible endpoint, and reads/writes ONLY through the
+   `db` object. To go live: replace the body of each `api.*` function with a
+   real `fetch("/api/...")` call — no other part of the app needs to change.
+
+   Suggested real endpoints:
+     GET  /api/questions?mine=true
+     POST /api/questions                 { text, category }
+     GET  /api/questions/:id
+     POST /api/questions/:id/answers     { text, seniorYear, seniorBranch, seniorExp }
+     POST /api/answers/:id/helpful
+     GET  /api/opportunities?branch=&year=&skill=
+     GET  /api/experiences?category=
+     POST /api/roadmap                   { year, branch, semester, interest }
+     GET  /api/queue/unanswered          (senior only, session-scoped)
+   Auth in production: anonymous session tokens issued at login, NEVER a
+   name/roll-number/email is attached to a question or an answer.
+   ========================================================================== */
+
+const CATEGORIES = ["Academics","Labs","Internships","Placements","Projects","Hackathons","Career","College Life"];
+const BRANCHES = ["CSE","IT","ECE","EEE","MECH","CIVIL"];
+const BRANCH_COLOR = {
+  CSE:"#363A94", IT:"#1C8E77", ECE:"#B4762A", EEE:"#7A4FB5", MECH:"#C4562F", CIVIL:"#3D7A8C"
+};
+
+const seedQuestions = () => ([
+  {
+    id:"Q1042", mine:true, category:"Internships",
+    text:"I'm in 2nd year CSE. What skills should I learn before applying for internships?",
+    askedYear:2, askedBranch:"CSE", createdAt:"2 days ago",
+    answers:[
+      {id:"A1",seniorYear:4,seniorBranch:"CSE",exp:"3 internships · product-based offer",text:"Start with one programming language, SQL, Git/GitHub and good projects.",helpfulCount:14,helpfulByMe:false},
+      {id:"A2",seniorYear:3,seniorBranch:"CSE",exp:"Internship at an early-stage startup",text:"Focus on DSA and one development skill first — depth beats breadth early on.",helpfulCount:9,helpfulByMe:false},
+      {id:"A3",seniorYear:4,seniorBranch:"IT",exp:"Placement committee volunteer",text:"Build 2–3 solid projects and put them on GitHub with clear READMEs — recruiters actually open them.",helpfulCount:11,helpfulByMe:false},
+      {id:"A4",seniorYear:4,seniorBranch:"CSE",exp:"Open-source contributor",text:"Don't skip communication skills. Mock interviews with friends helped me more than I expected.",helpfulCount:5,helpfulByMe:false},
+      {id:"A5",seniorYear:3,seniorBranch:"ECE",exp:"Cross-branch software internship",text:"Even non-CSE branches can crack SDE internships — DSA + projects matter more than your branch tag.",helpfulCount:7,helpfulByMe:false},
+    ]
+  },
+  {
+    id:"Q1041", mine:true, category:"Labs",
+    text:"Any tips for DBMS lab viva? Our professor asks a lot of query-based questions on the spot.",
+    askedYear:2, askedBranch:"CSE", createdAt:"4 days ago",
+    answers:[
+      {id:"A6",seniorYear:3,seniorBranch:"CSE",exp:"Scored top marks in DBMS lab",text:"Practice writing joins and nested subqueries by hand, not just in the terminal — vivas test recall.",helpfulCount:6,helpfulByMe:false},
+      {id:"A7",seniorYear:4,seniorBranch:"IT",exp:"Lab TA for two semesters",text:"Know your own program's ER diagram cold — that's the first thing they ask about.",helpfulCount:4,helpfulByMe:false},
+      {id:"A8",seniorYear:3,seniorBranch:"CSE",exp:"DBMS lab experience",text:"Revise normalization forms — 1NF to BCNF — with your own examples, not textbook ones.",helpfulCount:3,helpfulByMe:false},
+    ]
+  },
+  {
+    id:"Q1040", mine:true, category:"Academics",
+    text:"How should I choose electives in 3rd year if I want to move into AI/ML later?",
+    askedYear:3, askedBranch:"CSE", createdAt:"6 days ago",
+    answers:[]
+  },
+  {
+    id:"Q1043", mine:false, category:"Hackathons",
+    text:"First time participating in a hackathon — how should a team of complete beginners prepare?",
+    askedYear:2, askedBranch:"ECE", createdAt:"6 hours ago",
+    answers:[]
+  },
+  {
+    id:"Q1044", mine:false, category:"Placements",
+    text:"Is it too late to switch to software roles in final year if my branch is Mechanical?",
+    askedYear:4, askedBranch:"MECH", createdAt:"1 day ago",
+    answers:[]
+  },
+  {
+    id:"Q1045", mine:false, category:"Projects",
+    text:"How many projects are actually enough for placements — is it quality or quantity that matters more?",
+    askedYear:3, askedBranch:"IT", createdAt:"1 day ago",
+    answers:[
+      {id:"A9",seniorYear:4,seniorBranch:"IT",exp:"3 internships, placed in-campus",text:"Two deep, well-explained projects beat six shallow ones in every interview I've had.",helpfulCount:8,helpfulByMe:false},
+    ]
+  },
+]);
+
+const seedExperiencePool = [
+  {branch:"CSE",year:3,topic:"Internship experience",category:"Internships"},
+  {branch:"CSE",year:4,topic:"Placement preparation",category:"Internships"},
+  {branch:"IT",year:4,topic:"Project experience",category:"Internships"},
+  {branch:"ECE",year:3,topic:"Switched branch into software",category:"Internships"},
+  {branch:"CSE",year:4,topic:"On-campus placement, 3 offers",category:"Placements"},
+  {branch:"MECH",year:4,topic:"Off-campus software placement",category:"Placements"},
+  {branch:"IT",year:3,topic:"Resume shortlisted at 6 companies",category:"Placements"},
+  {branch:"CSE",year:3,topic:"DBMS + OS lab viva prep",category:"Labs"},
+  {branch:"EEE",year:2,topic:"Circuits lab troubleshooting",category:"Labs"},
+  {branch:"CSE",year:4,topic:"Won inter-college hackathon",category:"Hackathons"},
+  {branch:"IT",year:3,topic:"First hackathon as a beginner",category:"Hackathons"},
+  {branch:"CSE",year:4,topic:"Published 2 open-source projects",category:"Projects"},
+  {branch:"CIVIL",year:4,topic:"Capstone project, industry mentor",category:"Projects"},
+  {branch:"CSE",year:3,topic:"Elective selection for AI/ML",category:"Academics"},
+  {branch:"ECE",year:4,topic:"GATE prep alongside placements",category:"Career"},
+  {branch:"MECH",year:4,topic:"Chose core engineering job offer",category:"Career"},
+  {branch:"CSE",year:2,topic:"Balancing clubs and coursework",category:"College Life"},
+  {branch:"IT",year:3,topic:"Managing hostel life + internships",category:"College Life"},
+];
+
+const seedOpportunities = [
+  {id:"OP1",type:"Internship",title:"Summer SDE Internship",org:"Devstack Labs",branch:["CSE","IT"],year:[2,3],skills:["DSA","Web Dev"],deadline:"5 Oct 2026",mode:"Remote"},
+  {id:"OP2",type:"Hackathon",title:"CodeSprint 48hr Hackathon",org:"TechFest National",branch:["CSE","IT","ECE","EEE"],year:[1,2,3,4],skills:["Teamwork","Problem Solving"],deadline:"12 Oct 2026",mode:"Hybrid"},
+  {id:"OP3",type:"Job",title:"Graduate Engineer Trainee",org:"Meridian Power Corp",branch:["EEE","MECH","CIVIL"],year:[4],skills:["Core Engineering"],deadline:"20 Oct 2026",mode:"On-site"},
+  {id:"OP4",type:"Workshop",title:"Intro to Embedded Systems",org:"IEEE Student Chapter",branch:["ECE","EEE"],year:[2,3],skills:["Embedded C","IoT"],deadline:"1 Oct 2026",mode:"On-campus"},
+  {id:"OP5",type:"Training",title:"Full-Stack Bootcamp (6 wks)",org:"CodeCraft Academy",branch:["CSE","IT"],year:[2,3,4],skills:["React","Node.js"],deadline:"Rolling",mode:"Remote"},
+  {id:"OP6",type:"Coding Contest",title:"Monthly Algorithmic Challenge",org:"CodeArena",branch:["CSE","IT","ECE","EEE","MECH","CIVIL"],year:[1,2,3,4],skills:["DSA","Competitive Coding"],deadline:"30 Sep 2026",mode:"Online"},
+  {id:"OP7",type:"Scholarship",title:"Merit-cum-Means Scholarship",org:"State Education Board",branch:["CSE","IT","ECE","EEE","MECH","CIVIL"],year:[1,2,3,4],skills:[],deadline:"15 Nov 2026",mode:"Application"},
+  {id:"OP8",type:"Internship",title:"Data Analyst Intern",org:"InsightWorks",branch:["CSE","IT","EEE"],year:[3,4],skills:["SQL","Python"],deadline:"8 Oct 2026",mode:"Remote"},
+  {id:"OP9",type:"Job",title:"Site Engineer — Fresher",org:"Buildright Infra",branch:["CIVIL"],year:[4],skills:["AutoCAD","Site Management"],deadline:"25 Oct 2026",mode:"On-site"},
+  {id:"OP10",type:"Workshop",title:"Resume & Interview Clinic",org:"Career Cell",branch:["CSE","IT","ECE","EEE","MECH","CIVIL"],year:[3,4],skills:["Communication"],deadline:"3 Oct 2026",mode:"On-campus"},
+];
+
+const ROADMAP_RULES = {
+  "Software / SDE":["Learn a core programming language deeply","Practice DSA 1 hour daily on a tracker","Build one project that solves a real problem","Contribute to a beginner-friendly open-source repo","Do 2 mock interviews with a senior or peer","Polish your GitHub profile and resume"],
+  "Core Engineering":["Strengthen fundamentals from this semester's core subjects","Get hands-on time in the department lab beyond class hours","Pursue one relevant certification (CAD/PLC/etc.)","Take up a mini-project tied to your specialization","Attend a core-industry workshop or site visit","Build a resume around lab and project work"],
+  "Higher Studies":["Shortlist target exams (GATE/GRE/GMAT) early","Build a strong semester GPA — it matters for shortlists","Start one research-oriented mini-project","Reach out to a professor for a recommendation letter","Prepare a statement of purpose draft","Research 5–8 target universities or institutes"],
+  "Government / PSU":["Begin GATE syllabus mapping against your semester","Solve previous years' papers topic-wise","Join a peer study group for accountability","Track PSU recruitment notifications for your branch","Revise core subjects in parallel with electives","Take periodic mock tests to gauge readiness"],
+  "Entrepreneurship":["Talk to 10 potential users about a problem you've noticed","Build a rough MVP or prototype, however small","Join or start a college entrepreneurship cell activity","Learn basic finance and pitching fundamentals","Apply to a campus incubation or ideation program","Find one mentor — senior, faculty, or alum"],
+};
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem("engconnect_demo_v1");
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.warn("EngConnect: could not read local demo storage", e); }
+  return null;
+}
+function saveState(state){
+  try{ localStorage.setItem("engconnect_demo_v1", JSON.stringify(state)); }
+  catch(e){ console.warn("EngConnect: could not write local demo storage", e); }
+}
+
+/* Mock async "API" — swap bodies for fetch() calls when a backend exists */
+const api = {
+  listQuestions: (db) => Promise.resolve(db.questions),
+  createQuestion: (db, {text,category,year,branch}) => {
+    const nextNum = Math.max(...db.questions.map(q=>parseInt(q.id.slice(1),10))) + 1;
+    const q = {id:"Q"+nextNum, mine:true, category, text, askedYear:year, askedBranch:branch, createdAt:"just now", answers:[]};
+    return Promise.resolve(q);
+  },
+  addAnswer: (db, qid, {text, seniorYear, seniorBranch, seniorExp}) => {
+    const ans = {id:"A"+Math.random().toString(36).slice(2,8), seniorYear, seniorBranch, exp:seniorExp, text, helpfulCount:0, helpfulByMe:false, justAdded:true};
+    return Promise.resolve(ans);
+  },
+};
+
+/* ==========================================================================
+   ICONS — minimal hand-rolled line icons (keeps the page fully self-contained)
+   ========================================================================== */
+function Icon({name, size=18, ...rest}){
+  const p = {width:size,height:size,viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",strokeLinecap:"round",strokeLinejoin:"round",...rest};
+  switch(name){
+    case "home": return <svg {...p}><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>;
+    case "ask": return <svg {...p}><path d="M21 11.5a8.5 8.5 0 0 1-11.9 7.8L3 21l1.7-6.1A8.5 8.5 0 1 1 21 11.5Z"/></svg>;
+    case "list": return <svg {...p}><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.3" fill="currentColor" stroke="none"/><circle cx="3.5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="3.5" cy="18" r="1.3" fill="currentColor" stroke="none"/></svg>;
+    case "compass": return <svg {...p}><circle cx="12" cy="12" r="9"/><path d="M15 9l-2 6-6 2 2-6 6-2z"/></svg>;
+    case "map": return <svg {...p}><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg>;
+    case "users": return <svg {...p}><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19a6.5 6.5 0 0 1 13 0"/><circle cx="17.5" cy="8.5" r="2.6"/><path d="M15.7 12.2A5.3 5.3 0 0 1 21.5 18"/></svg>;
+    case "bell": return <svg {...p}><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>;
+    case "search": return <svg {...p}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>;
+    case "check": return <svg {...p}><path d="M20 6 9 17l-5-5"/></svg>;
+    case "arrow-left": return <svg {...p}><path d="M19 12H5M11 18l-6-6 6-6"/></svg>;
+    case "shield": return <svg {...p}><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg>;
+    case "menu": return <svg {...p}><path d="M4 7h16M4 12h16M4 17h16"/></svg>;
+    case "x": return <svg {...p}><path d="M18 6 6 18M6 6l12 12"/></svg>;
+    case "heart": return <svg {...p}><path d="M12 20s-7-4.4-9.5-9C1 7 2.8 3.8 6 3.4c2-.3 3.7.8 6 3.1 2.3-2.3 4-3.4 6-3.1 3.2.4 5 3.6 3.5 7.6C19 15.6 12 20 12 20Z"/></svg>;
+    case "spark": return <svg {...p}><path d="M12 3v4M12 17v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M3 12h4M17 12h4M4.2 19.8 7 17M17 7l2.8-2.8"/></svg>;
+    case "briefcase": return <svg {...p}><rect x="3" y="8" width="18" height="11" rx="2"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></svg>;
+    case "award": return <svg {...p}><circle cx="12" cy="8" r="5"/><path d="M8.5 12.5 7 21l5-3 5 3-1.5-8.5"/></svg>;
+    case "clock": return <svg {...p}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>;
+    case "filter": return <svg {...p}><path d="M4 5h16M7 12h10M10 19h4"/></svg>;
+    case "chevron-right": return <svg {...p}><path d="M9 6l6 6-6 6"/></svg>;
+    case "info": return <svg {...p}><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>;
+    case "moon": return <svg {...p}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>;
+    default: return null;
+  }
+}
+
+/* ==========================================================================
+   SMALL SHARED UI
+   ========================================================================== */
+function IdHex({year, branch, size=40}){
+  const color = BRANCH_COLOR[branch] || "#363A94";
+  return (
+    <div className="idhex" style={{width:size,height:size,background:`linear-gradient(155deg, ${color}, ${color}cc)`}}>
+      <span className="yr">Y{year}</span>
+      <span className="br">{branch}</span>
+    </div>
+  );
+}
+
+function Badge({tone="indigo", children, icon}){
+  return <span className={`badge badge-${tone}`}>{icon && <Icon name={icon} size={11}/>}{children}</span>;
+}
+
+function Toast({text, onDone}){
+  useEffect(()=>{ const t = setTimeout(onDone, 3200); return ()=>clearTimeout(t); },[]);
+  return <div className="toast"><Icon name="check" size={16}/><span dangerouslySetInnerHTML={{__html:text}}/></div>;
+}
+
+/* ==========================================================================
+   APP
+   ========================================================================== */
+const NAV = [
+  {key:"home", label:"Home", icon:"home"},
+  {key:"ask", label:"Ask Seniors", icon:"ask"},
+  {key:"mine", label:"My Questions", icon:"list"},
+  {key:"opportunities", label:"Opportunities", icon:"compass"},
+  {key:"roadmap", label:"Roadmap", icon:"map"},
+  {key:"experiences", label:"Experiences", icon:"users"},
+];
+
+function App(){
+  const persisted = useMemo(loadState, []);
+  const [questions, setQuestions] = useState(persisted?.questions || seedQuestions());
+  const [role, setRole] = useState(persisted?.role || "student"); // "student" | "senior"
+  const [view, setView] = useState("home");
+  const [activeQid, setActiveQid] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [seniorAnsweredIds, setSeniorAnsweredIds] = useState(persisted?.seniorAnsweredIds || []);
+  const [searchQ, setSearchQ] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const notifRef = useRef(null);
+
+  useEffect(()=>{ saveState({questions, role, seniorAnsweredIds}); }, [questions, role, seniorAnsweredIds]);
+
+  useEffect(()=>{
+    function onDocClick(e){
+      if(notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return ()=>document.removeEventListener("mousedown", onDocClick);
+  },[]);
+
+  const goto = useCallback((v, qid)=>{
+    setView(v); if(qid) setActiveQid(qid);
+    setSidebarOpen(false);
+    window.scrollTo({top:0, behavior:"smooth"});
+  },[]);
+
+  const myQuestions = useMemo(()=>questions.filter(q=>q.mine), [questions]);
+  const activeQuestion = useMemo(()=>questions.find(q=>q.id===activeQid), [questions, activeQid]);
+  const unansweredBySenior = useMemo(()=>questions.filter(q=>!seniorAnsweredIds.includes(q.id)), [questions, seniorAnsweredIds]);
+
+  function handleCreateQuestion({text, category, year, branch}){
+    api.createQuestion({questions}, {text,category,year,branch}).then(q=>{
+      setQuestions(prev=>[q, ...prev]);
+      setToast(`Posted anonymously — you're <b>${q.id}</b>`);
+      goto("mine");
+    });
+  }
+
+  function handleMarkHelpful(qid, aid){
+    setQuestions(prev=>prev.map(q=>{
+      if(q.id!==qid) return q;
+      return {...q, answers:q.answers.map(a=>{
+        if(a.id!==aid) return a;
+        const on = !a.helpfulByMe;
+        return {...a, helpfulByMe:on, helpfulCount:a.helpfulCount + (on?1:-1)};
+      })};
+    }));
+  }
+
+  function handleSeniorAnswer(qid, payload){
+    api.addAnswer({questions}, qid, payload).then(ans=>{
+      setQuestions(prev=>prev.map(q=> q.id===qid ? {...q, answers:[...q.answers, ans]} : q));
+      setSeniorAnsweredIds(prev=>[...prev, qid]);
+      const q = questions.find(x=>x.id===qid);
+      const newCount = (q?.answers.length||0) + 1;
+      setToast(`Answer posted anonymously on <b>${qid}</b> — now ${newCount} senior answer${newCount===1?"":"s"}`);
+      goto("senior-queue");
+    });
+  }
+
+  const searchResults = useMemo(()=>{
+    if(!searchQ.trim()) return null;
+    const q = searchQ.toLowerCase();
+    const qs = questions.filter(x=>x.text.toLowerCase().includes(q) || x.category.toLowerCase().includes(q)).slice(0,4);
+    const ops = seedOpportunities.filter(o=>o.title.toLowerCase().includes(q) || o.org.toLowerCase().includes(q)).slice(0,3);
+    return {qs, ops};
+  }, [searchQ, questions]);
+
+  return (
+    <div className="shell">
+      {sidebarOpen && <div className="overlay" onClick={()=>setSidebarOpen(false)}/>}
+      <aside className={"sidebar" + (sidebarOpen ? " open" : "")}>
+        <div className="brand">
+          <div className="brand-mark"><Icon name="compass" size={18} stroke="#fff"/></div>
+          <div>
+            <div className="brand-name">EngConnect</div>
+            <div className="brand-sub">Student Support Platform</div>
+          </div>
+        </div>
+        <nav className="nav-list">
+          {NAV.map(n=>(
+            <button key={n.key} className={"nav-item" + (view===n.key?" active":"")} onClick={()=>goto(n.key)}>
+              <Icon name={n.icon} size={17}/>
+              <span>{n.label}</span>
+              {n.key==="mine" && <span className="nav-count">{myQuestions.length}</span>}
+            </button>
+          ))}
+          {role==="senior" && (
+            <button className={"nav-item" + (view==="senior-queue"?" active":"")} onClick={()=>goto("senior-queue")}>
+              <Icon name="shield" size={17}/>
+              <span>Answer Queue</span>
+              <span className="nav-count">{unansweredBySenior.length}</span>
+            </button>
+          )}
+        </nav>
+        <div className="role-switch">
+          <div className="role-switch-label">Prototype demo — viewing as</div>
+          <div className="role-toggle">
+            <button className={role==="student"?"active":""} onClick={()=>{setRole("student"); goto("home");}}>Student (Junior)</button>
+            <button className={role==="senior"?"active":""} onClick={()=>{setRole("senior"); goto("senior-queue");}}>Senior</button>
+          </div>
+        </div>
+      </aside>
+
+      <div className="main">
+        <header className="topbar">
+          <button className="menu-btn" onClick={()=>setSidebarOpen(true)} aria-label="Open menu"><Icon name="menu"/></button>
+          <div className="search-wrap">
+            <Icon name="search" size={16} className="search-icon"/>
+            <input
+              className="search-input" placeholder="Search questions, opportunities…"
+              value={searchQ} onChange={e=>setSearchQ(e.target.value)}
+              onFocus={()=>setSearchFocused(true)}
+              onBlur={()=>setTimeout(()=>setSearchFocused(false),150)}
+            />
+            {searchFocused && searchResults && (
+              <div className="search-drop">
+                {(searchResults.qs.length===0 && searchResults.ops.length===0) && <div className="search-drop-empty">No matches in demo data.</div>}
+                {searchResults.qs.map(q=>(
+                  <div key={q.id} className="search-drop-item" onMouseDown={()=>{goto(q.mine?"detail":"senior-answer", q.id); setSearchQ("");}}>
+                    <div style={{fontSize:12.5,fontWeight:700}}>{q.id} · {q.category}</div>
+                    <div style={{fontSize:12,color:"var(--ink-faint)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{q.text}</div>
+                  </div>
+                ))}
+                {searchResults.ops.map(o=>(
+                  <div key={o.id} className="search-drop-item" onMouseDown={()=>{goto("opportunities"); setSearchQ("");}}>
+                    <div style={{fontSize:12.5,fontWeight:700}}>{o.title}</div>
+                    <div style={{fontSize:12,color:"var(--ink-faint)"}}>{o.type} · {o.org}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <span className="demo-pill">DEMO DATA</span>
+          <div className="bell-wrap" ref={notifRef}>
+            <button className="bell-btn" onClick={()=>setNotifOpen(o=>!o)} aria-label="Notifications">
+              <Icon name="bell" size={17}/>
+              <span className="bell-dot"/>
+            </button>
+            {notifOpen && (
+              <div className="notif-drop">
+                <div className="notif-head">Notifications</div>
+                <div className="notif-item"><b>Q1042</b> got a new senior answer.<span className="notif-time">2h ago</span></div>
+                <div className="notif-item">3 new opportunities match your <b>CSE, Year 2</b> profile.<span className="notif-time">1d ago</span></div>
+                <div className="notif-item">Your <b>Semester Roadmap</b> was updated for this term.<span className="notif-time">3d ago</span></div>
+              </div>
+            )}
+          </div>
+        </header>
+
+        <main className="content">
+          {view==="home" && <Home role={role} myQuestions={myQuestions} unansweredBySenior={unansweredBySenior} goto={goto}/>}
+          {view==="ask" && <AskSeniors onSubmit={handleCreateQuestion}/>}
+          {view==="mine" && <MyQuestions myQuestions={myQuestions} goto={goto}/>}
+          {view==="detail" && activeQuestion && <QuestionDetail q={activeQuestion} goto={goto} onHelpful={handleMarkHelpful}/>}
+          {view==="opportunities" && <Opportunities/>}
+          {view==="roadmap" && <Roadmap/>}
+          {view==="experiences" && <Experiences/>}
+          {view==="senior-queue" && <SeniorQueue questions={unansweredBySenior} goto={goto}/>}
+          {view==="senior-answer" && activeQuestion && <SeniorAnswer q={activeQuestion} goto={goto} onSubmit={handleSeniorAnswer}/>}
+        </main>
+      </div>
+      {toast && <Toast text={toast} onDone={()=>setToast(null)}/>}
+    </div>
+  );
+}
+
+/* ---------------- HOME / DASHBOARD ---------------- */
+function Home({role, myQuestions, unansweredBySenior, goto}){
+  const answeredCount = myQuestions.reduce((s,q)=>s+q.answers.length,0);
+  const academicDoubts = myQuestions.filter(q=>q.category==="Academics"||q.category==="Labs").length;
+
+  const stats = [
+    {key:"ask", label:"Ask Seniors", num:"New", icon:"ask", tone:"indigo", desc:"Post a question anonymously", go:()=>goto("ask")},
+    {key:"mine", label:"My Questions", num:myQuestions.length, icon:"list", tone:"gold", desc:`${answeredCount} answers received in total`, go:()=>goto("mine")},
+    {key:"doubts", label:"Academic Doubts", num:academicDoubts, icon:"info", tone:"teal", desc:"Academics & Labs questions", go:()=>goto("mine")},
+    {key:"opps", label:"Opportunities", num:seedOpportunities.length, icon:"compass", tone:"coral", desc:"Live demo listings this week", go:()=>goto("opportunities")},
+    {key:"exp", label:"Senior Experiences", num:seedExperiencePool.length, icon:"users", tone:"indigo", desc:"Anonymous shared experiences", go:()=>goto("experiences")},
+    {key:"road", label:"Semester Roadmap", num:"Plan", icon:"map", tone:"gold", desc:"Personalised for your semester", go:()=>goto("roadmap")},
+  ];
+  const iconBg = {indigo:"var(--indigo-tint)", gold:"var(--gold-tint)", teal:"var(--teal-tint)", coral:"var(--coral-tint)"};
+  const iconFg = {indigo:"var(--indigo)", gold:"#8A5A11", teal:"var(--teal)", coral:"var(--coral)"};
+
+  if(role==="senior"){
+    return (
+      <div>
+        <div className="page-head">
+          <div className="page-eyebrow">SENIOR DASHBOARD · DEMO DATA</div>
+          <h1 className="page-title">Welcome back, Verified Senior</h1>
+          <p className="page-desc">Juniors can only see your year, branch and experience tags — never your name or profile. Here's what needs your help today.</p>
+        </div>
+        <div className="senior-banner">
+          <Icon name="shield" size={26}/>
+          <div><b>{unansweredBySenior.length} questions</b> are waiting for your answer.<p>Answering takes under a minute and stays fully anonymous on both sides.</p></div>
+        </div>
+        <button className="btn btn-primary" onClick={()=>goto("senior-queue")}>Open Answer Queue <Icon name="chevron-right" size={15}/></button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="page-head">
+        <div className="page-eyebrow">DASHBOARD · DEMO DATA</div>
+        <h1 className="page-title">Everything you need, in one place</h1>
+        <p className="page-desc">Ask anonymously, learn from verified seniors, and track opportunities built for your branch and year.</p>
+      </div>
+      <div className="grid grid-3">
+        {stats.map(s=>(
+          <div key={s.key} className="card stat-card" onClick={s.go}>
+            <div className="stat-top">
+              <div className="stat-icon" style={{background:iconBg[s.tone], color:iconFg[s.tone]}}><Icon name={s.icon} size={17}/></div>
+              <Icon name="chevron-right" size={16} style={{color:"var(--ink-faint)"}}/>
+            </div>
+            <div className="stat-num">{s.num}</div>
+            <div className="stat-label">{s.label}</div>
+            <div style={{fontSize:11.5,color:"var(--ink-faint)",marginTop:4}}>{s.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{marginTop:28}} className="grid grid-2">
+        <div className="card" style={{padding:20}}>
+          <div className="section-title">Recent activity<button className="link-more" onClick={()=>goto("mine")}>View all</button></div>
+          {myQuestions.slice(0,3).map(q=>(
+            <div key={q.id} className="qrow" style={{padding:"11px 0"}} onClick={()=>goto("detail", q.id)}>
+              <div className="qrow-id">{q.id}</div>
+              <div className="qrow-body">
+                <div className="qrow-text">{q.text}</div>
+                <div className="qrow-meta"><Badge tone="indigo">{q.category}</Badge><span>{q.createdAt}</span></div>
+              </div>
+              <div className={"qrow-answers" + (q.answers.length===0?" zero":"")}>{q.answers.length===0 ? "No answers yet" : `${q.answers.length} answers`}</div>
+            </div>
+          ))}
+        </div>
+        <div className="card" style={{padding:20}}>
+          <div className="section-title">Who's been through this<button className="link-more" onClick={()=>goto("experiences")}>Browse all</button></div>
+          {seedExperiencePool.slice(0,4).map((e,i)=>(
+            <div key={i} className="wht-item">
+              <IdHex year={e.year} branch={e.branch} size={34}/>
+              <div>
+                <div className="wht-name">{e.year===4?"4th":e.year===3?"3rd":e.year===2?"2nd":"1st"}-year {e.branch} student</div>
+                <div className="wht-topic">{e.topic}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- ASK SENIORS ---------------- */
+function AskSeniors({onSubmit}){
+  const [text, setText] = useState("");
+  const [category, setCategory] = useState("Internships");
+  const [year, setYear] = useState(2);
+  const [branch, setBranch] = useState("CSE");
+
+  return (
+    <div>
+      <div className="page-head">
+        <div className="page-eyebrow">ASK SENIORS · ANONYMOUS</div>
+        <h1 className="page-title">Ask a question, anonymously</h1>
+        <p className="page-desc">Your question is shown to verified seniors with your year and branch only. Nothing that identifies you is ever attached.</p>
+      </div>
+
+      <div className="card ask-card" style={{maxWidth:640}}>
+        <div className="anon-note">
+          <Icon name="shield" size={16}/>
+          <span>Posted as <b>Anonymous {year===1?"1st":year===2?"2nd":year===3?"3rd":"4th"}-Year {branch} Student</b>. Seniors will never see your name, roll number, email or profile.</span>
+        </div>
+
+        <textarea className="textarea" placeholder="e.g. I'm in 2nd year CSE. What skills should I learn before applying for internships?"
+          value={text} onChange={e=>setText(e.target.value)} />
+
+        <div style={{marginTop:16, fontSize:12, fontWeight:700, color:"var(--ink-faint)", textTransform:"uppercase", letterSpacing:".03em"}}>Category</div>
+        <div className="chip-row">
+          {CATEGORIES.map(c=>(
+            <button key={c} className={"chip" + (category===c?" active":"")} onClick={()=>setCategory(c)}>{c}</button>
+          ))}
+        </div>
+
+        <div style={{display:"flex", gap:12, marginBottom:6}}>
+          <div className="field" style={{flex:1}}>
+            <label>Your year</label>
+            <select className="select" style={{width:"100%"}} value={year} onChange={e=>setYear(Number(e.target.value))}>
+              {[1,2,3,4].map(y=><option key={y} value={y}>{y===1?"1st":y===2?"2nd":y===3?"3rd":"4th"} Year</option>)}
+            </select>
+          </div>
+          <div className="field" style={{flex:1}}>
+            <label>Your branch</label>
+            <select className="select" style={{width:"100%"}} value={branch} onChange={e=>setBranch(e.target.value)}>
+              {BRANCHES.map(b=><option key={b} value={b}>{b}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <button
+          className="btn btn-primary btn-block" style={{marginTop:14}}
+          disabled={text.trim().length<8}
+          onClick={()=>{ onSubmit({text:text.trim(), category, year, branch}); setText(""); }}
+        >
+          <Icon name="shield" size={15}/> Post Anonymously
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- MY QUESTIONS ---------------- */
+function MyQuestions({myQuestions, goto}){
+  return (
+    <div>
+      <div className="page-head">
+        <div className="page-eyebrow">MY QUESTIONS</div>
+        <h1 className="page-title">Your posted questions</h1>
+        <p className="page-desc">Answer counts update automatically as verified seniors respond.</p>
+      </div>
+      <div className="card">
+        {myQuestions.length===0 && (
+          <div className="empty-state">
+            <Icon name="ask" size={30}/>
+            <p>You haven't asked anything yet.</p>
+            <button className="btn btn-primary btn-sm" onClick={()=>goto("ask")}>Ask Seniors</button>
+          </div>
+        )}
+        {myQuestions.map(q=>(
+          <div key={q.id} className="qrow" onClick={()=>goto("detail", q.id)}>
+            <div className="qrow-id">{q.id}</div>
+            <div className="qrow-body">
+              <div className="qrow-text">{q.text}</div>
+              <div className="qrow-meta"><Badge tone="indigo">{q.category}</Badge><span>{q.createdAt}</span></div>
+            </div>
+            <div className={"qrow-answers" + (q.answers.length===0?" zero":"")}>
+              {q.answers.length===0 ? "0 answers" : `${q.answers.length} answer${q.answers.length===1?"":"s"}`}
+            </div>
+            <Icon name="chevron-right" size={16} style={{color:"var(--ink-faint)", flexShrink:0}}/>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- QUESTION DETAIL ---------------- */
+function QuestionDetail({q, goto, onHelpful}){
+  const relatedExp = seedExperiencePool.filter(e=>e.category===q.category);
+  const verifiedCount = 12 + (relatedExp.length*3) % 9; // deterministic demo count
+
+  return (
+    <div>
+      <button className="back-btn" onClick={()=>goto("mine")}><Icon name="arrow-left" size={15}/> Back to My Questions</button>
+
+      <div className="card qdetail-card">
+        <div className="qdetail-label">Your Question · {q.id}</div>
+        <p className="qdetail-text">{q.text}</p>
+        <div className="qdetail-foot">
+          <Badge tone="indigo">{q.category}</Badge>
+          <Badge tone="outline" icon="shield">Posted anonymously</Badge>
+          <span style={{fontSize:12, color:"var(--ink-faint)"}}>{q.createdAt}</span>
+        </div>
+      </div>
+
+      <div className="grid" style={{gridTemplateColumns:"2fr 1fr", gap:20}}>
+        <div>
+          <div className="answers-head">
+            <span className="answers-count">{q.answers.length} Senior Answer{q.answers.length===1?"":"s"}</span>
+            <Badge tone="teal" icon="shield">Anonymous both ways</Badge>
+          </div>
+
+          {q.answers.length===0 && (
+            <div className="card empty-state">
+              <Icon name="ask" size={28}/>
+              <p>No senior has answered yet — verified seniors in your category will see this soon.</p>
+            </div>
+          )}
+
+          {q.answers.map(a=>(
+            <div key={a.id} className={"card answer-card" + (a.justAdded ? " new-answer-flash":"")}>
+              <div className="answer-top">
+                <IdHex year={a.seniorYear} branch={a.seniorBranch}/>
+                <div className="answer-meta">
+                  <div className="answer-senior"><Icon name="shield" size={13} stroke="#1C8E77"/> Verified Senior — {a.seniorBranch}, {a.seniorYear===4?"4th":a.seniorYear===3?"3rd":"2nd"} Year</div>
+                  <div className="answer-exp">{a.exp}</div>
+                </div>
+              </div>
+              <p className="answer-text">"{a.text}"</p>
+              <div className="answer-foot">
+                <button className={"helpful-btn" + (a.helpfulByMe?" on":"")} onClick={()=>onHelpful(q.id, a.id)}>
+                  <Icon name="heart" size={13}/> {a.helpfulByMe ? "Marked Helpful" : "Mark Helpful"}
+                </button>
+                <span style={{fontSize:11.5, color:"var(--ink-faint)"}}>{a.helpfulCount} found this helpful</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div>
+          <div className="card wht-card">
+            <div className="section-title" style={{marginBottom:2}}>Who's been through this?</div>
+            <div className="wht-count"><b>{verifiedCount}</b> verified students have experience with this topic</div>
+            {relatedExp.slice(0,4).map((e,i)=>(
+              <div key={i} className="wht-item">
+                <IdHex year={e.year} branch={e.branch} size={32}/>
+                <div>
+                  <div className="wht-name">{e.year===4?"4th":e.year===3?"3rd":e.year===2?"2nd":"1st"}-year {e.branch} student</div>
+                  <div className="wht-topic">{e.topic}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{fontSize:11, color:"var(--ink-faint)", marginTop:10, lineHeight:1.5}}>Identities are never revealed — only year, branch and relevant experience.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- SENIOR QUEUE ---------------- */
+function SeniorQueue({questions, goto}){
+  return (
+    <div>
+      <div className="page-head">
+        <div className="page-eyebrow">SENIOR VIEW · DEMO DATA</div>
+        <h1 className="page-title">Questions you haven't answered yet</h1>
+        <p className="page-desc">You'll only ever see the asker's year and branch — never their identity. Pick one and help out.</p>
+      </div>
+      <div className="card">
+        {questions.length===0 && (
+          <div className="empty-state"><Icon name="check" size={28}/><p>You're all caught up — no open questions right now.</p></div>
+        )}
+        {questions.map(q=>(
+          <div key={q.id} className="qrow" onClick={()=>goto("senior-answer", q.id)}>
+            <IdHex year={q.askedYear} branch={q.askedBranch} size={38}/>
+            <div className="qrow-body">
+              <div style={{fontSize:11.5, color:"var(--ink-faint)", marginBottom:2}}>{q.id} · Anonymous {q.askedYear===1?"1st":q.askedYear===2?"2nd":q.askedYear===3?"3rd":"4th"}-Year {q.askedBranch} Student asks:</div>
+              <div className="qrow-text" style={{whiteSpace:"normal"}}>"{q.text}"</div>
+              <div className="qrow-meta"><Badge tone="indigo">{q.category}</Badge><span>{q.createdAt}</span>{q.answers.length>0 && <span>· {q.answers.length} answered so far</span>}</div>
+            </div>
+            <button className="btn btn-gold btn-sm">Answer Anonymously</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SeniorAnswer({q, goto, onSubmit}){
+  const [text, setText] = useState("");
+  const [seniorYear, setSeniorYear] = useState(4);
+  const [seniorBranch, setSeniorBranch] = useState("CSE");
+  const [seniorExp, setSeniorExp] = useState("");
+
+  return (
+    <div>
+      <button className="back-btn" onClick={()=>goto("senior-queue")}><Icon name="arrow-left" size={15}/> Back to queue</button>
+      <div className="senior-banner">
+        <Icon name="shield" size={24}/>
+        <div><b>Strict anonymity is on.</b><p>The asker will only see "Verified Senior — {seniorBranch}, {seniorYear===4?"4th":seniorYear===3?"3rd":"2nd"} Year". Your name and profile stay hidden.</p></div>
+      </div>
+
+      <div className="card qdetail-card">
+        <div className="qdetail-label">{q.id} · Anonymous {q.askedYear===1?"1st":q.askedYear===2?"2nd":q.askedYear===3?"3rd":"4th"}-Year {q.askedBranch} Student asks</div>
+        <p className="qdetail-text">"{q.text}"</p>
+        <Badge tone="indigo">{q.category}</Badge>
+        {q.answers.length>0 && <span style={{marginLeft:10, fontSize:12, color:"var(--ink-faint)"}}>{q.answers.length} senior{q.answers.length===1?"":"s"} already answered</span>}
+      </div>
+
+      <div className="card answer-box">
+        <div style={{fontSize:13, fontWeight:700, marginBottom:12}}>Your anonymous identity tag</div>
+        <div style={{display:"flex", gap:12, marginBottom:14}}>
+          <div className="field" style={{flex:1}}>
+            <label>Your year</label>
+            <select className="select" style={{width:"100%"}} value={seniorYear} onChange={e=>setSeniorYear(Number(e.target.value))}>
+              {[3,4].map(y=><option key={y} value={y}>{y===3?"3rd":"4th"} Year</option>)}
+            </select>
+          </div>
+          <div className="field" style={{flex:1}}>
+            <label>Your branch</label>
+            <select className="select" style={{width:"100%"}} value={seniorBranch} onChange={e=>setSeniorBranch(e.target.value)}>
+              {BRANCHES.map(b=><option key={b} value={b}>{b}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="field" style={{marginBottom:14}}>
+          <label>Relevant experience (shown to junior, no identity)</label>
+          <input className="select" style={{width:"100%"}} placeholder="e.g. 2 internships, placement committee volunteer"
+            value={seniorExp} onChange={e=>setSeniorExp(e.target.value)}/>
+        </div>
+        <div className="field" style={{marginBottom:14}}>
+          <label>Your answer</label>
+          <textarea className="textarea" style={{minHeight:100}} placeholder="Share honest, specific advice…" value={text} onChange={e=>setText(e.target.value)}/>
+        </div>
+        <button className="btn btn-gold btn-block" disabled={text.trim().length<8}
+          onClick={()=>onSubmit(q.id, {text:text.trim(), seniorYear, seniorBranch, seniorExp:seniorExp.trim()||"Verified senior"})}>
+          <Icon name="shield" size={15}/> Submit Answer Anonymously
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- OPPORTUNITIES ---------------- */
+function Opportunities(){
+  const [branch, setBranch] = useState("All");
+  const [year, setYear] = useState("All");
+  const [skill, setSkill] = useState("");
+  const [type, setType] = useState("All");
+  const types = ["All", ...Array.from(new Set(seedOpportunities.map(o=>o.type)))];
+
+  const filtered = seedOpportunities.filter(o=>{
+    if(branch!=="All" && !o.branch.includes(branch)) return false;
+    if(year!=="All" && !o.year.includes(Number(year))) return false;
+    if(type!=="All" && o.type!==type) return false;
+    if(skill.trim() && !o.skills.some(s=>s.toLowerCase().includes(skill.toLowerCase()))) return false;
+    return true;
+  });
+
+  const typeTone = {Internship:"indigo",Hackathon:"coral",Job:"teal",Workshop:"gold",Training:"indigo",
+    "Coding Contest":"coral","Scholarship":"gold"};
+
+  return (
+    <div>
+      <div className="page-head">
+        <div className="page-eyebrow">OPPORTUNITY RADAR · DEMO DATA</div>
+        <h1 className="page-title">Opportunities picked for engineering students</h1>
+        <p className="page-desc">Internships, hackathons, jobs, workshops, training, contests and scholarships — filter by what fits you.</p>
+      </div>
+
+      <div className="filter-bar">
+        <Icon name="filter" size={15} style={{color:"var(--ink-faint)"}}/>
+        <select className="select" value={type} onChange={e=>setType(e.target.value)}>
+          {types.map(t=><option key={t} value={t}>{t==="All"?"All types":t}</option>)}
+        </select>
+        <select className="select" value={branch} onChange={e=>setBranch(e.target.value)}>
+          <option value="All">All branches</option>
+          {BRANCHES.map(b=><option key={b} value={b}>{b}</option>)}
+        </select>
+        <select className="select" value={year} onChange={e=>setYear(e.target.value)}>
+          <option value="All">All years</option>
+          {[1,2,3,4].map(y=><option key={y} value={y}>{y===1?"1st":y===2?"2nd":y===3?"3rd":"4th"} Year</option>)}
+        </select>
+        <input className="select" placeholder="Skill, e.g. SQL" value={skill} onChange={e=>setSkill(e.target.value)} style={{minWidth:140}}/>
+        {(branch!=="All"||year!=="All"||skill||type!=="All") &&
+          <button className="btn btn-ghost btn-sm" onClick={()=>{setBranch("All");setYear("All");setSkill("");setType("All");}}>Clear filters</button>}
+      </div>
+
+      <div className="grid grid-3">
+        {filtered.map(o=>(
+          <div key={o.id} className="card opp-card">
+            <div className="opp-top">
+              <div>
+                <p className="opp-title">{o.title}</p>
+                <div className="opp-org">{o.org}</div>
+              </div>
+              <Badge tone={typeTone[o.type]||"indigo"}>{o.type}</Badge>
+            </div>
+            <div className="opp-tags">
+              {o.branch.length<6 && o.branch.map(b=><Badge key={b} tone="outline">{b}</Badge>)}
+              {o.skills.map(s=><Badge key={s} tone="outline">{s}</Badge>)}
+            </div>
+            <div className="opp-foot">
+              <span><Icon name="clock" size={12}/> {o.deadline}</span>
+              <span>{o.mode}</span>
+            </div>
+          </div>
+        ))}
+        {filtered.length===0 && (
+          <div className="card empty-state" style={{gridColumn:"1/-1"}}>
+            <Icon name="compass" size={28}/><p>No demo opportunities match these filters.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- ROADMAP ---------------- */
+function Roadmap(){
+  const [year, setYear] = useState(2);
+  const [branch, setBranch] = useState("CSE");
+  const [semester, setSemester] = useState(4);
+  const [interest, setInterest] = useState("Software / SDE");
+  const [generated, setGenerated] = useState(true);
+
+  const items = ROADMAP_RULES[interest];
+
+  return (
+    <div>
+      <div className="page-head">
+        <div className="page-eyebrow">SEMESTER ROADMAP · DEMO DATA</div>
+        <h1 className="page-title">Your personalised semester plan</h1>
+        <p className="page-desc">Tell us where you are — we'll suggest what to focus on this semester.</p>
+      </div>
+
+      <div className="card roadmap-form">
+        <div className="field">
+          <label>Year</label>
+          <select className="select" style={{width:"100%"}} value={year} onChange={e=>setYear(Number(e.target.value))}>
+            {[1,2,3,4].map(y=><option key={y} value={y}>{y===1?"1st":y===2?"2nd":y===3?"3rd":"4th"} Year</option>)}
+          </select>
+        </div>
+        <div className="field">
+          <label>Branch</label>
+          <select className="select" style={{width:"100%"}} value={branch} onChange={e=>setBranch(e.target.value)}>
+            {BRANCHES.map(b=><option key={b} value={b}>{b}</option>)}
+          </select>
+        </div>
+        <div className="field">
+          <label>Semester</label>
+          <select className="select" style={{width:"100%"}} value={semester} onChange={e=>setSemester(Number(e.target.value))}>
+            {Array.from({length:8},(_,i)=>i+1).map(s=><option key={s} value={s}>Semester {s}</option>)}
+          </select>
+        </div>
+        <div className="field">
+          <label>Career interest</label>
+          <select className="select" style={{width:"100%"}} value={interest} onChange={e=>setInterest(e.target.value)}>
+            {Object.keys(ROADMAP_RULES).map(k=><option key={k} value={k}>{k}</option>)}
+          </select>
+        </div>
+        <button className="btn btn-primary" style={{gridColumn:"span 1"}} onClick={()=>setGenerated(true)}>
+          <Icon name="spark" size={15}/> Generate Roadmap
+        </button>
+      </div>
+
+      {generated && (
+        <div className="card" style={{padding:22, marginTop:20}}>
+          <div className="section-title">
+            Suggested activities — {branch}, {year===1?"1st":year===2?"2nd":year===3?"3rd":"4th"} Year, Sem {semester}
+            <Badge tone="gold">{interest}</Badge>
+          </div>
+          <div className="timeline">
+            {items.map((it,i)=>(
+              <div key={i} className="tl-item">
+                <div className="tl-dot"/>
+                <div className="card tl-card">
+                  <p className="tl-title">{it}</p>
+                  <p className="tl-desc">Recommended step {i+1} of {items.length} for your {interest.toLowerCase()} track this semester.</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------- EXPERIENCES ---------------- */
+function Experiences(){
+  const [cat, setCat] = useState("All");
+  const filtered = cat==="All" ? seedExperiencePool : seedExperiencePool.filter(e=>e.category===cat);
+
+  return (
+    <div>
+      <div className="page-head">
+        <div className="page-eyebrow">SENIOR EXPERIENCES · ANONYMOUS</div>
+        <h1 className="page-title">Who's been through this?</h1>
+        <p className="page-desc">Browse real situations verified seniors have faced — shared with year and branch only, never identity.</p>
+      </div>
+
+      <div className="chip-row">
+        <button className={"chip" + (cat==="All"?" active":"")} onClick={()=>setCat("All")}>All ({seedExperiencePool.length})</button>
+        {CATEGORIES.filter(c=>seedExperiencePool.some(e=>e.category===c)).map(c=>(
+          <button key={c} className={"chip" + (cat===c?" active":"")} onClick={()=>setCat(c)}>{c}</button>
+        ))}
+      </div>
+
+      <div className="grid grid-3">
+        {filtered.map((e,i)=>(
+          <div key={i} className="card exp-card">
+            <div className="exp-top">
+              <IdHex year={e.year} branch={e.branch}/>
+              <div>
+                <Badge tone="teal" icon="shield">Verified Senior</Badge>
+                <div className="exp-topic">{e.year===4?"4th":e.year===3?"3rd":e.year===2?"2nd":"1st"}-Year {e.branch} student</div>
+              </div>
+            </div>
+            <p className="exp-quote">{e.topic} — available to answer related questions anonymously.</p>
+            <Badge tone="outline">{e.category}</Badge>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
